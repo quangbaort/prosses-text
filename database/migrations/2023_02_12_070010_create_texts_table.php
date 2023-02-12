@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('texts', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('folder_id');
+            $table->foreignId('folder_id')->nullable()->constrained();
             $table->longText('text');
             $table->timestamps();
         });

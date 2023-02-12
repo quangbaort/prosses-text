@@ -9,10 +9,11 @@ class Folder extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name', 'api'
+        'name', 'api',
     ];
 
-    public function text(): \Illuminate\Database\Eloquent\Relations\HasMany
+
+    public function text()
     {
         return $this->hasMany(Text::class);
     }

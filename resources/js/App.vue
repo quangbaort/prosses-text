@@ -28,16 +28,28 @@
                 <div class="row">
                     <div class="col-md-3 col-lg-3 border-end">
                         <ul class="px-0">
-                            <li v-for="list in listFolder" :class="[ idActive == list.id ? 'active' : '' ]" :key="list.id" @click="activeFolder(list.id)">{{ list.name }}</li>
+                            <li v-for="list in listFolder" v-bind:class="{'active': idActive === list.id}" :key="list.id" @click="activeFolder(list.id)">{{ list.name }}</li>
                         </ul>
                     </div>
                     <div class="col-md-9 col-lg-9">
-                        <p>Số dòng còn lại: 1000</p>
+                        <div>Số dòng còn lại:
+                            <span style="color: green" v-if="textCount !== null">
+                                {{ textCount }}
+                            </span>
+                            <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                         <p>Xin hãy tải lên file <strong style="color: red">txt </strong></p>
                         <form class="d-flex " action="" method="post" enctype="multipart/form-data" id="form-upload">
-                            <input type="file" class="form-control w-auto" name="file" id="file" accept=".txt">
-                            <button type="submit" id="btn-submit" class="btn btn-success mx-1">Tải lên</button>
+                            <input type="file" @change="changeFile" class="form-control w-auto" name="file" id="file" accept=".txt">
+                            <button type="button" id="btn-submit" v-if="!isLoading" @click="upload" class="btn btn-success mx-1">Tải lên</button>
+                            <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </form>
+                        <span style="color: red" v-if="errorMessageFile" class="d-block my-2">{{ errorMessageFile }}</span>
+                        <span style="color: green" v-if="successMessageFile" class="d-block my-2">{{ successMessageFile }}</span>
                     </div>
                 </div>
             </div>
@@ -54,47 +66,32 @@ export default {
     },
     data() {
         return {
-            idActive: 0,
+            idActive: null,
             isOpenAddNew: false,
             nameFolder: '',
+            isLoading: false,
             errorNameFolder: '',
             messageSuccess: '',
-            listFolder: [
-                {
-                    id: 1,
-                    name: 'test1',
-                    api: 'test1',
-                    numberText: 1000,
-                },
-                {
-                    id: 2,
-                    name: 'test1',
-                    api: 'test1',
-                    numberText: 1000,
-                },
-                {
-                    id: 3,
-                    name: 'test1',
-                    api: 'test1',
-                    numberText: 1000,
-                }
-
-            ]
+            listFolder: [],
+            errorMessageFile: '',
+            successMessageFile: '',
+            file: {},
+            textCount: null
         }
     },
     methods : {
         activeFolder(idFolder) {
             this.idActive = idFolder
-            const folder = this.listFolder.find(list => list.id = idFolder)
+            this.textCount = null
+            const folder = this.listFolder.find(list => list.id === idFolder)
             if(folder) {
-                axios.get(`/api/get-row-name?name=${folder.api}`).then(response => {
-                    console.log(response)
+                axios.get(`/api/get-row/${idFolder}`).then(response => {
+                    this.textCount = response.data.data.text_count ?? 0
                 }).catch(error => {
                     console.log(error)
                 })
 
             }
-            // console.log(idFolder)
         },
         addNewFolder() {
             if(!this.nameFolder) {
@@ -107,7 +104,7 @@ export default {
                 axios.post(`/api/add-folder`, {
                     name: this.nameFolder
                 },).then(response => {
-                    console.log(response)
+                    this.idActive = response.data.data.folder_id
                     this.messageSuccess = 'Thêm mới danh sách thành công'
                     this.nameFolder = ''
                     this.errorNameFolder = ''
@@ -120,13 +117,51 @@ export default {
         getFolder() {
             axios.get(`/api/get-folder`).then(response => {
                 this.listFolder = response.data.data
-                this.idActive = this.listFolder[0].id
+                this.idActive = !this.idActive ? this.listFolder[0].id : this.idActive
+                this.activeFolder(this.idActive)
             }).catch(error => {
                 console.log(error)
             })
         },
         openAddNew() {
             this.isOpenAddNew = !this.isOpenAddNew
+        },
+        changeFile(event) {
+            if (!event || !event.target || !event.target.files || event.target.files.length === 0) {
+                return;
+            }
+            const file = event.target.files[0]
+            const name = file.name;
+            const lastDot = name.lastIndexOf('.');
+            const fileName = name.substring(0, lastDot);
+            const ext = name.substring(lastDot + 1);
+            if(ext !== 'txt') {
+                this.errorMessageFile = `File ${name} sai định dạng txt`
+                return;
+            }else {
+                this.errorMessageFile = ''
+            }
+            const fileSize = Math.floor((file.size / 1024 / 1024) * 100) / 100
+            if(fileSize > 2000) {
+                this.errorMessageFile = `File ${name} đã quá tải, yêu cầu < hoặc = 2gb`
+                return;
+            }
+            this.file = file
+
+        },
+        upload() {
+            this.isLoading = true
+            let formData = new FormData()
+            formData.append('file', this.file)
+            formData.append('folder_id', this.idActive)
+            axios.post(`/api/upload`, formData).then(response => {
+                this.successMessageFile = response.data.message
+                this.errorMessageFile = ''
+                this.isLoading = false
+            }).catch(error => {
+                this.errorMessageFile = error.response.data.message
+                this.isLoading = false
+            })
         }
     }
 }

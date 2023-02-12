@@ -10,11 +10,18 @@ use Illuminate\Http\Request;
 class UploadController extends Controller
 {
 
-    public function upload(Request $request): \Illuminate\Http\RedirectResponse
+    public function upload(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             // 2gb
             'file' => 'required|mimes:txt|max:2097152',
+            'folder_id' => 'required|exists:folders,id'
+        ],[
+            'file.required' => 'file không đượic để trống',
+            'file.mimes' => 'file sai định dang txt',
+            'file,max' => 'file quá tải, không được vượt quá 2gb',
+            'folder_id.required' => 'folder_id không được để trống',
+            'folder_id.exit' => 'id folder không tồn tại',
         ]);
         // read file
         $file = $request->file('file');
@@ -25,6 +32,7 @@ class UploadController extends Controller
                 if($line !== '') {
                     $data[] = [
                         'text' => $line,
+                        'folder_id' => $request->folder_id
                     ];
                 }
             }
@@ -38,19 +46,18 @@ class UploadController extends Controller
             dd($e->getMessage());
         }
 
-
-        return back()
-            ->with('success', 'Bạn đã upload file thành công')
-            ->with('file', $file->getClientOriginalName())
-            ->with('count', count(file($file)));
+        return response()->json([
+            'data' => [],
+            'message' => 'Tải lên thành công file '. $file->getClientOriginalName(). ' '. count(file($file)) .' dòng'
+        ]);
 
     }
 
     public function countRow(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
-            // 25.5 mb
-            'file' => 'required|mimes:txt|max:26624',
+            // 2gb
+            'file' => 'required|mimes:txt|max:2097152',
         ]);
         $file = $request->file('file');
         return response()->json([
@@ -82,17 +89,15 @@ class UploadController extends Controller
         ]);
     }
 
-    public function getRowName(Request $request)
+    public function getRowName(Request $request, $idFolder)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ], [
-            'name.required' => 'Tên danh sách không được để trống!',
-            'name.string' => 'Tên danh sách phải là ký tự',
-            'name.max' => 'Tên danh sách không được vượt quá 255 ký tự',
+        $folder = Folder::query()->findOrFail($idFolder);
+        return response()->json([
+            'data' => [
+                'text_count' => $folder->text->count()
+            ],
+            'message' => 'Lấy giữ liệu thành công!'
         ]);
-        $folder = Folder::query()->where('api', $request->name)->first();
-        dd($folder->text);
 
     }
 }

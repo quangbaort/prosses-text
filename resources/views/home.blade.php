@@ -38,43 +38,43 @@
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
     <script>
-        $(document).ready(function () {
-            $('#file').change(function () {
-                const file = this.files[0];
-                const fileType = file.type;
-                const match = ['text/plain'];
-                if (!((fileType === match[0]))) {
-                    alert('Chỉ được upload file txt');
-                    $('#file').val('');
-                    return false;
-                } else {
-                    let formData = new FormData($('#form-upload')[0]);
-                    $.ajax({
-                        url: '{{ route('count-row') }}',
-                        type: 'POST',
-                        data: formData,
-                        contentType: false,
-                        processData: false,
-                        dataType: 'json',
-                        success: function (response) {
-                            $('#btn-submit').attr('disabled', false);
-                            $('#btn-submit').text('Tải lên');
-                            $('#info').html('Số dòng trong file là: ' + new Intl.NumberFormat().format(response.count)).css('color', '#198754');
-                        },
-                        beforeSend: function () {
-                            $('#btn-submit').attr('disabled', true);
-                            $('#btn-submit').text('Đang xử lý...');
-                        },
-                        error: function (response) {
-                            $('#btn-submit').attr('disabled', false);
-                            $('#btn-submit').text('Tải lên');
-                            $('#info').html('Có lỗi xảy ra').css('color', 'red');
-                        }
-                    })
-                }
-            });
+        {{--$(document).ready(function () {--}}
+        {{--    $('#file').change(function () {--}}
+        {{--        const file = this.files[0];--}}
+        {{--        const fileType = file.type;--}}
+        {{--        const match = ['text/plain'];--}}
+        {{--        if (!((fileType === match[0]))) {--}}
+        {{--            alert('Chỉ được upload file txt');--}}
+        {{--            $('#file').val('');--}}
+        {{--            return false;--}}
+        {{--        } else {--}}
+        {{--            let formData = new FormData($('#form-upload')[0]);--}}
+        {{--            $.ajax({--}}
+        {{--                url: '{{ route('count-row') }}',--}}
+        {{--                type: 'POST',--}}
+        {{--                data: formData,--}}
+        {{--                contentType: false,--}}
+        {{--                processData: false,--}}
+        {{--                dataType: 'json',--}}
+        {{--                success: function (response) {--}}
+        {{--                    $('#btn-submit').attr('disabled', false);--}}
+        {{--                    $('#btn-submit').text('Tải lên');--}}
+        {{--                    $('#info').html('Số dòng trong file là: ' + new Intl.NumberFormat().format(response.count)).css('color', '#198754');--}}
+        {{--                },--}}
+        {{--                beforeSend: function () {--}}
+        {{--                    $('#btn-submit').attr('disabled', true);--}}
+        {{--                    $('#btn-submit').text('Đang xử lý...');--}}
+        {{--                },--}}
+        {{--                error: function (response) {--}}
+        {{--                    $('#btn-submit').attr('disabled', false);--}}
+        {{--                    $('#btn-submit').text('Tải lên');--}}
+        {{--                    $('#info').html('Có lỗi xảy ra').css('color', 'red');--}}
+        {{--                }--}}
+        {{--            })--}}
+        {{--        }--}}
+        {{--    });--}}
 
-        });
+        {{--});--}}
     </script>
 @endsection
 

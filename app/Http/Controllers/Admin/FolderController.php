@@ -9,6 +9,12 @@ use Illuminate\Support\Str;
 
 class FolderController extends Controller
 {
+
+    public function __construct()
+    {
+        return $this->middleware('auth:sanctum');
+    }
+
     public function getFolder(Request $request): \Illuminate\Http\JsonResponse
     {
         $folders = Folder::query()->get();
@@ -25,12 +31,14 @@ class FolderController extends Controller
             'name.max' => 'Tên danh sách không được vượt quá 255 ký tự',
             'name.unique' => 'Tên danh sách đã bị trùng'
         ]);
-        Folder::query()->create([
+        $folderId = Folder::query()->create([
            'name' => $request->name,
            'api' => Str::slug($request->name),
-        ]);
+        ])->id;
         return response()->json([
-            'data' => [],
+            'data' => [
+                'folder_id' => $folderId
+            ],
             'message' => 'Thêm mới thành công'
         ]);
     }

@@ -10,5 +10,6 @@ class Text extends Model
     use HasFactory;
     protected $fillable = [
         'text',
+        'folder_id',
     ];
 }

@@ -22,5 +22,11 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::post('upload', [App\Http\Controllers\Admin\UploadController::class, 'upload'])->name('upload')
-->middleware('auth');
+Route::prefix('/api')->middleware('auth')->group(function () {
+    Route::post('count-row', [App\Http\Controllers\Admin\UploadController::class, 'countRow'])->name('count-row');
+    Route::get('get-row', [App\Http\Controllers\Admin\UploadController::class, 'getRow'])->name('get-row');
+    Route::get('get-folder', [App\Http\Controllers\Admin\FolderController::class, 'getFolder'])->name('get-folder');
+    Route::post('add-folder', [App\Http\Controllers\Admin\FolderController::class, 'addFolder'])->name('add-folder')->middleware('api-session');
+    Route::get('get-row/{idFolder}', [App\Http\Controllers\Admin\UploadController::class, 'getRowName'])->name('get-row-name');
+    Route::post('upload', [App\Http\Controllers\Admin\UploadController::class, 'upload'])->name('upload');
+});
