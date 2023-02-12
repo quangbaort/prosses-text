@@ -150,6 +150,18 @@ export default {
 
         },
         upload() {
+            let r = new Resumable({
+                target:'/api/upload',
+                // query:{upload_token: {{}}}
+                fileType: ['txt'],
+                headers: {
+                    'Accept': 'application/json'
+                },
+                testChunks: false,
+                throttleProgressCallbacks: 1
+            });
+
+            r.assignBrowse()
             this.isLoading = true
             let formData = new FormData()
             formData.append('file', this.file)
