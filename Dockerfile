@@ -1,4 +1,6 @@
-FROM php:7.4-fpm-alpine
+#FROM php:7.4-fpm-alpine
+FROM php:8.1.1-fpm
+
 
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
