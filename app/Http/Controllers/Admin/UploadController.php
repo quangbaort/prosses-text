@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Folder;
 use App\Models\Text;
 use Illuminate\Http\Request;
 
@@ -12,8 +13,8 @@ class UploadController extends Controller
     public function upload(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
-            // 25.5 mb
-            'file' => 'required|mimes:txt|max:26624',
+            // 2gb
+            'file' => 'required|mimes:txt|max:2097152',
         ]);
         // read file
         $file = $request->file('file');
@@ -21,9 +22,11 @@ class UploadController extends Controller
             $data = [];
             $file->storeAs('public/files', $file->getClientOriginalName());
             foreach (file($file) as $line) {
-                $data[] = [
-                    'text' => $line,
-                ];
+                if($line !== '') {
+                    $data[] = [
+                        'text' => $line,
+                    ];
+                }
             }
             $collection = collect($data)->chunk(1000);
             foreach ($collection as $chunk) {
@@ -77,5 +80,19 @@ class UploadController extends Controller
             'data' => $text,
             'message' => 'Lấy dữ liệu thành công',
         ]);
+    }
+
+    public function getRowName(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ], [
+            'name.required' => 'Tên danh sách không được để trống!',
+            'name.string' => 'Tên danh sách phải là ký tự',
+            'name.max' => 'Tên danh sách không được vượt quá 255 ký tự',
+        ]);
+        $folder = Folder::query()->where('api', $request->name)->first();
+        dd($folder->text);
+
     }
 }

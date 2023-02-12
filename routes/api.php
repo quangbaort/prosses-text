@@ -19,3 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::post('count-row', [App\Http\Controllers\Admin\UploadController::class, 'countRow'])->name('count-row');
 Route::get('get-row', [App\Http\Controllers\Admin\UploadController::class, 'getRow'])->name('get-row');
+Route::get('get-folder', [App\Http\Controllers\Admin\FolderController::class, 'getFolder'])->name('get-folder');
+Route::post('add-folder', [App\Http\Controllers\Admin\FolderController::class, 'addFolder'])->name('add-folder');
+Route::get('get-row-name', [App\Http\Controllers\Admin\UploadController::class, 'getRowName'])->name('get-row-name');
+//Route::get('upload', [App\Http\Controllers\Admin\UploadController::class, 'getRowName'])->name('get-row-name');
+

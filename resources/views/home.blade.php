@@ -2,37 +2,37 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Dashboard') }}</div>
-
-                <div class="card-body">
-                    @if (session('success'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('success') . ' '. session('file') .' với số dòng là: '. number_format(session('count')) }}
-                        </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="alert alert-danger" role="alert">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-                    <p>Số dòng còn lại: {{ $textCount }}</p>
-                    <p>Xin hãy tải lên file <strong style="color: red">txt </strong></p>
+{{--    <div class="row">--}}
+{{--        <div class="col-md-12 col-lg-12">--}}
+{{--            <div class="card">--}}
+{{--                <div class="card-header">{{ __('Dashboard') }}</div>--}}
+{{--                <div class="card-body">--}}
+{{--                    @if (session('success'))--}}
+{{--                        <div class="alert alert-success" role="alert">--}}
+{{--                            {{ session('success') . ' '. session('file') .' với số dòng là: '. number_format(session('count')) }}--}}
+{{--                        </div>--}}
+{{--                    @endif--}}
+{{--                    @if (session('error'))--}}
+{{--                        <div class="alert alert-danger" role="alert">--}}
+{{--                            {{ session('error') }}--}}
+{{--                        </div>--}}
+{{--                    @endif--}}
+{{--                    <p>Số dòng còn lại: {{ $textCount }}</p>--}}
+{{--                    <p>Xin hãy tải lên file <strong style="color: red">txt </strong></p>--}}
 {{--                    form upload file accpect excel, csv, doc, txt, --}}
-                    <form class="d-flex " action="{{route('upload')}}" method="post" enctype="multipart/form-data" id="form-upload">
-                        @csrf
-                        <input type="file" class="form-control w-auto   " name="file" id="file" accept=".txt">
-                        <button type="submit" id="btn-submit" class="btn btn-success mx-1">Tải lên</button>
-                    </form>
-                    <p class="mb-0 mt-2">
-                        <b id="info" ></b>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+{{--                    <form class="d-flex " action="{{route('upload')}}" method="post" enctype="multipart/form-data" id="form-upload">--}}
+{{--                        @csrf--}}
+{{--                        <input type="file" class="form-control w-auto" name="file" id="file" accept=".txt">--}}
+{{--                        <button type="submit" id="btn-submit" class="btn btn-success mx-1">Tải lên</button>--}}
+{{--                    </form>--}}
+{{--                    <p class="mb-0 mt-2">--}}
+{{--                        <b id="info" ></b>--}}
+{{--                    </p>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    </div>--}}
+    <div id="app"></div>
 </div>
 @endsection
 @section('scripts')
