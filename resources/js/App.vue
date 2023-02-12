@@ -6,6 +6,10 @@
         {{ messageSuccess }}
         <button type="button" class="btn-close" @click="messageSuccess = ''" aria-label="Close"></button>
     </div>
+    <div class="alert alert-danger my-2 alert-dismissible fade show" role="alert" v-if="messageError">
+        {{ messageError }}
+        <button type="button" class="btn-close" @click="messageError = ''" aria-label="Close"></button>
+    </div>
     <div class="card my-2" v-if="isOpenAddNew">
         <div class="card-header">
             Thêm mới 1 danh sách
@@ -28,23 +32,43 @@
                 <div class="row">
                     <div class="col-md-3 col-lg-3 border-end">
                         <ul class="px-0">
-                            <li v-for="list in listFolder" v-bind:class="{'active': idActive === list.id}" :key="list.id" @click="activeFolder(list.id)">{{ list.name }}</li>
+                            <li v-for="list in listFolder" v-bind:class="{'active': idActive === list.id}" :key="list.id" @click="activeFolder(list.id)">
+                                {{ list.name }}
+                            </li>
                         </ul>
                     </div>
                     <div class="col-md-9 col-lg-9">
-                        <div>Số dòng còn lại:
-                            <span style="color: green" v-if="textCount !== null">
-                                {{ textCount }}
-                            </span>
-                            <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
-                                <span class="visually-hidden">Loading...</span>
+                        <div class="row" v-if="idActive">
+                            <div class="col-md-9">
+                                <div>Số dòng còn lại:
+                                    <span style="color: green" v-if="textCount !== null">
+                                        {{ textCount }}
+                                    </span>
+                                    <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                                <div> Link api:
+                                    <a :href="linkApi" v-if="linkApi !== ''">
+                                        <span style="color: green" >
+                                        {{ linkApi }}
+                                        </span>
+                                    </a>
+                                    <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 justify-content-end d-flex" >
+                                <button class="btn btn-danger" @click="deleteText">Xóa</button>
                             </div>
                         </div>
+
                         <p>Xin hãy tải lên file <strong style="color: red">txt </strong></p>
                         <form class="d-flex " action="" method="post" enctype="multipart/form-data" id="form-upload">
                             <input type="file" @change="changeFile" class="form-control w-auto" name="file" id="file" accept=".txt">
                             <button type="button" id="btn-submit" v-if="!isLoading" @click="upload" class="btn btn-success mx-1">Tải lên</button>
-                            <div v-else class="spinner-border text-primary" role="status" style="width: 20px; height: 20px">
+                            <div v-else class="spinner-border text-primary mx-1" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                         </form>
@@ -75,18 +99,23 @@ export default {
             listFolder: [],
             errorMessageFile: '',
             successMessageFile: '',
+            messageError: '',
+            linkApi : '',
             file: {},
             textCount: null
         }
     },
     methods : {
         activeFolder(idFolder) {
-            this.idActive = idFolder
+            this.idActive = idFolder ?? this.idActive
             this.textCount = null
+            this.errorMessageFile = null
+            this.successMessageFile = null
             const folder = this.listFolder.find(list => list.id === idFolder)
             if(folder) {
                 axios.get(`/api/get-row/${idFolder}`).then(response => {
                     this.textCount = response.data.data.text_count ?? 0
+                    this.linkApi = response.data.data.link_api
                 }).catch(error => {
                     console.log(error)
                 })
@@ -108,7 +137,7 @@ export default {
                     this.messageSuccess = 'Thêm mới danh sách thành công'
                     this.nameFolder = ''
                     this.errorNameFolder = ''
-                    this.getFolder()
+                    this.getFolder(this.idActive)
                 }).catch(error => {
                     this.errorNameFolder = error.response.data.message
                 })
@@ -150,18 +179,6 @@ export default {
 
         },
         upload() {
-            let r = new Resumable({
-                target:'/api/upload',
-                // query:{upload_token: {{}}}
-                fileType: ['txt'],
-                headers: {
-                    'Accept': 'application/json'
-                },
-                testChunks: false,
-                throttleProgressCallbacks: 1
-            });
-
-            r.assignBrowse()
             this.isLoading = true
             let formData = new FormData()
             formData.append('file', this.file)
@@ -170,9 +187,19 @@ export default {
                 this.successMessageFile = response.data.message
                 this.errorMessageFile = ''
                 this.isLoading = false
+                this.activeFolder(this.idActive)
             }).catch(error => {
                 this.errorMessageFile = error.response.data.message
                 this.isLoading = false
+            })
+        },
+        deleteText(){
+            axios.post(`/api/delete-text/${this.idActive}`).then(response => {
+                this.messageSuccess = response.data.message
+                this.activeFolder(this.idActive)
+                this.getFolder()
+            }).catch(error => {
+                this.messageError = error.response.data.message
             })
         }
     }

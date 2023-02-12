@@ -12,4 +12,9 @@ class Text extends Model
         'text',
         'folder_id',
     ];
+
+    public function folder()
+    {
+        return $this->belongsTo(Folder::class);
+    }
 }

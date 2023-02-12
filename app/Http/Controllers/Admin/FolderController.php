@@ -17,7 +17,7 @@ class FolderController extends Controller
 
     public function getFolder(Request $request): \Illuminate\Http\JsonResponse
     {
-        $folders = Folder::query()->get();
+        $folders = Folder::query()->orderBy('created_at', 'desc')->get();
         return response()->json(['data' => $folders, 'message' => 'lấy giữ liệu thành công']);
     }
 

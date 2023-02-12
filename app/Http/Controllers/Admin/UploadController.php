@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\Text;
 use Illuminate\Http\Request;
+use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 
 class UploadController extends Controller
 {
@@ -23,6 +24,7 @@ class UploadController extends Controller
             'folder_id.required' => 'folder_id không được để trống',
             'folder_id.exit' => 'id folder không tồn tại',
         ]);
+//        $receiver = new FileReceiver('file', $request, )
         // read file
         $file = $request->file('file');
         try {
@@ -67,18 +69,18 @@ class UploadController extends Controller
 
     public function getRow(Request $request): \Illuminate\Http\JsonResponse
     {
-        if($request->limit && is_numeric($request->limit) && $request->limit > 0){
-            $text = Text::query()->select('text', 'id')->inRandomOrder()->simplePaginate((int)$request->limit);
-            $textDelete = Text::query()->whereIn('id', $text->pluck('id'));
-            if($textDelete->exists()){
-                $textDelete->delete();
-            }
-            return response()->json([
-                'data' => $text,
-                'message' => 'Lấy dữ liệu thành công',
-            ]);
-        }
-        $text = Text::query()->select('text', 'id')->inRandomOrder()->first();
+        $request->validate([
+            'limit' => 'numeric',
+            'folder_api' => 'required|string|exists:folders,api|max:255'
+        ], [
+            'folder_api.required' => 'Folder api không được bỏ trống!',
+            'folder_api.string' => 'Folder api phải là ký tự!',
+            'folder_api.exists' => 'Folder api không tồn tại!',
+            'folder_api.max' => 'Folder api không được vượt quá 255 ký tự!'
+
+        ]);
+        $folder = Folder::query()->where('api', $request->folder_api)->first();
+        $text = Text::query()->where('folder_id', $folder->id)->select('text', 'id')->inRandomOrder()->first();
         $textDelete = Text::query()->where('id', $text->id);
         if($textDelete->exists()){
             $textDelete->delete();
@@ -91,13 +93,43 @@ class UploadController extends Controller
 
     public function getRowName(Request $request, $idFolder)
     {
+
         $folder = Folder::query()->findOrFail($idFolder);
+        $textCount = Text::query()->where('folder_id', $idFolder)->count();
         return response()->json([
             'data' => [
-                'text_count' => $folder->text->count()
+                'text_count' => number_format($textCount),
+                'link_api' => env('APP_URL').'/api/get-row?folder_api='.$folder->api
             ],
             'message' => 'Lấy giữ liệu thành công!'
         ]);
 
+    }
+    public function deleteText(Request $request, $idFolder): \Illuminate\Http\JsonResponse
+    {
+        if(!$idFolder && !is_numeric($idFolder)){
+            return response()->json([
+                'data' => [],
+                'message' => 'id không đúng'
+            ]);
+        }
+        $folder = Folder::query()->findOrFail($idFolder);
+        $folder->delete();
+        $texts = Text::query()->where('folder_id', $idFolder);
+        $textCount = $texts->count();
+
+        if($textCount <= 0) {
+            return response()->json([
+                'data' => [],
+                'message' => 'Đã xóa hết'
+            ]);
+        }
+        if($texts->exists()){
+            $texts->delete();
+        }
+        return response()->json([
+            'data' => [],
+            'message' => 'Đã xóa '. number_format($textCount) . ' dòng'
+        ]);
     }
 }
