@@ -1,6 +1,4 @@
-#FROM php:7.4-fpm-alpine
-FROM php:8.1.13-fpm-alpine3.17
-
+FROM php:7.4-fpm-alpine
 
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
@@ -164,8 +162,7 @@ RUN apk add wget \
   libjpeg-turbo-dev \
   shadow \
   zip \
-  libzip-dev \
-  mongodb \
+  libzip-dev
 
 RUN pecl install imagick && docker-php-ext-enable imagick && docker-php-ext-install gd && docker-php-ext-configure gd
 
