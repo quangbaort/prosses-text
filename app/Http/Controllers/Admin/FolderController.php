@@ -10,11 +10,6 @@ use Illuminate\Support\Str;
 class FolderController extends Controller
 {
 
-    public function __construct()
-    {
-        return $this->middleware('auth:sanctum');
-    }
-
     public function getFolder(Request $request): \Illuminate\Http\JsonResponse
     {
         $folders = Folder::query()->orderBy('created_at', 'desc')->get();

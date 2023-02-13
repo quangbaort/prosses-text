@@ -12,6 +12,7 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    @vite('resources/js/app.js')
 
 </head>
 <body>
@@ -74,8 +75,6 @@
             @yield('content')
         </main>
     </div>
-    @vite('resources/js/app.js')
-
 {{--    @yield('scripts')--}}
 
 </body>

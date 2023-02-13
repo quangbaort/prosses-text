@@ -3,18 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class Text extends Model
 {
     use HasFactory;
+    protected $connection = 'mongodb';
+    protected $collection = 'texts';
+
     protected $fillable = [
         'text',
         'folder_id',
     ];
 
-    public function folder()
+    protected $appends = [
+        'id',
+    ];
+    public function getIdAttribute($value = null)
     {
-        return $this->belongsTo(Folder::class);
+        return $this->attributes['_id'];
     }
+
+//    public function folder()
+//    {
+//        return $this->belongsTo(Folder::class);
+//    }
 }

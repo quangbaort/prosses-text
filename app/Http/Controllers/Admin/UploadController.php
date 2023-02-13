@@ -17,7 +17,7 @@ class UploadController extends Controller
         $request->validate([
             // 2gb
             'file' => 'required|mimes:txt|max:2097152',
-            'folder_id' => 'required|exists:folders,id'
+            'folder_id' => 'required|exists:folders,_id'
         ],[
             'file.required' => 'file không đượic để trống',
             'file.mimes' => 'file sai định dang txt',
@@ -76,9 +76,10 @@ class UploadController extends Controller
 
     public function getRow(Request $request): \Illuminate\Http\JsonResponse
     {
+
         $request->validate([
             'limit' => 'numeric',
-            'folder_api' => 'required|string|exists:folders,api|max:255'
+            'folder_api' => 'required|string|exists:folders,_id|max:255'
         ], [
             'folder_api.required' => 'Folder api không được bỏ trống!',
             'folder_api.string' => 'Folder api phải là ký tự!',
@@ -86,9 +87,15 @@ class UploadController extends Controller
             'folder_api.max' => 'Folder api không được vượt quá 255 ký tự!'
 
         ]);
-//        random text in folder
-        $text = Text::query()->where('folder_id', Folder::query()->where('api', $request->folder_api)->first()->id)->inRandomOrder()->first();
-        $text->delete();
+        $text = Text::query()->where('folder_id', $request->folder_api)->first();
+        if(!$text) {
+            return response()->json([
+                'data' => [],
+                'message' => 'Không có dữ liệu'
+            ]);
+        }
+        // delete text
+        $text->find($text->_id)->delete();
         return response()->json([
             'data' => $text,
             'message' => 'Lấy dữ liệu thành công',
@@ -103,7 +110,7 @@ class UploadController extends Controller
         return response()->json([
             'data' => [
                 'text_count' => number_format($textCount),
-                'link_api' => env('APP_URL').'/api/get-row?folder_api='.$folder->api
+                'link_api' => env('APP_URL').'/api/get-row?folder_api='.$folder->_id,
             ],
             'message' => 'Lấy giữ liệu thành công!'
         ]);
