@@ -164,7 +164,8 @@ RUN apk add wget \
   libjpeg-turbo-dev \
   shadow \
   zip \
-  libzip-dev
+  libzip-dev \
+  mongodb \
 
 RUN pecl install imagick && docker-php-ext-enable imagick && docker-php-ext-install gd && docker-php-ext-configure gd
 
