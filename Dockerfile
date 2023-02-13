@@ -54,7 +54,6 @@ RUN set -x \
                 bash \
                 alpine-sdk \
                 findutils \
-                mongodb \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
@@ -110,10 +109,10 @@ RUN set -x \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d
 
-COPY docker/nginx/scripts/docker-entrypoint.sh /
-COPY docker/nginx/scripts/10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
-COPY docker/nginx/scripts/20-envsubst-on-templates.sh /docker-entrypoint.d
-COPY docker/nginx/scripts/30-tune-worker-processes.sh /docker-entrypoint.d
+#COPY docker/nginx/scripts/docker-entrypoint.sh /
+#COPY docker/nginx/scripts/10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+#COPY docker/nginx/scripts/20-envsubst-on-templates.sh /docker-entrypoint.d
+#COPY docker/nginx/scripts/30-tune-worker-processes.sh /docker-entrypoint.d
 RUN chmod +x /docker-entrypoint.sh /docker-entrypoint.d/*.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
@@ -163,7 +162,8 @@ RUN apk add wget \
   libjpeg-turbo-dev \
   shadow \
   zip \
-  libzip-dev
+  libzip-dev \
+  mongodb \
 
 RUN pecl install imagick && docker-php-ext-enable imagick && docker-php-ext-install gd && docker-php-ext-configure gd
 
