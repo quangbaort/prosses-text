@@ -113,8 +113,8 @@ RUN set -x \
 #COPY docker/nginx/scripts/10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
 #COPY docker/nginx/scripts/20-envsubst-on-templates.sh /docker-entrypoint.d
 #COPY docker/nginx/scripts/30-tune-worker-processes.sh /docker-entrypoint.d
-RUN chmod +x /docker-entrypoint.sh /docker-entrypoint.d/*.sh
-ENTRYPOINT ["/docker-entrypoint.sh"]
+RUN #chmod +x /docker-entrypoint.sh /docker-entrypoint.d/*.sh
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 80
 
@@ -198,10 +198,10 @@ COPY docker/php/supervisor/supervisord.conf /etc/supervisord.conf
 
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY docker/nginx/.htpasswd /etc/nginx/.htpasswd
-
+#COPY docker/nginx/.htpasswd /etc/nginx/.htpasswd
+#
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
-COPY docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+#COPY docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /var/www
 
