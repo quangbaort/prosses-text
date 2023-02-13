@@ -1,4 +1,4 @@
-FROM php:7.4-fpm-alpine
+FROM php:8.1.13-fpm-alpine3.17
 
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
@@ -54,6 +54,7 @@ RUN set -x \
                 bash \
                 alpine-sdk \
                 findutils \
+                mongodb \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
