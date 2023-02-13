@@ -29,7 +29,8 @@
                 Tổng quan
             </div>
             <div class="card-body">
-                <div class="row">
+                <div class="text-center" v-if="listFolder.length <= 0">Không tìm thấy danh sách</div>
+                <div class="row" v-else>
                     <div class="col-md-3 col-lg-3 border-end">
                         <ul class="px-0">
                             <li v-for="list in listFolder" v-bind:class="{'active': idActive === list.id}" :key="list.id" @click="activeFolder(list.id)">
@@ -38,7 +39,7 @@
                         </ul>
                     </div>
                     <div class="col-md-9 col-lg-9">
-                        <div class="row" v-if="idActive">
+                        <div class="row" >
                             <div class="col-md-9">
                                 <div>Số dòng còn lại:
                                     <span style="color: green" v-if="textCount !== null">
@@ -60,10 +61,12 @@
                                 </div>
                             </div>
                             <div class="col-md-3 justify-content-end d-flex" >
-                                <button class="btn btn-danger" @click="deleteText">Xóa</button>
+                                <button class="btn btn-danger" @click="deleteText" v-if="!isLoadingDelete">Xóa</button>
+                                <div v-else class="spinner-border text-primary mx-1" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </div>
-
                         <p>Xin hãy tải lên file <strong style="color: red">txt </strong></p>
                         <form class="d-flex " action="" method="post" enctype="multipart/form-data" id="form-upload">
                             <input type="file" @change="changeFile" class="form-control w-auto" name="file" id="file" accept=".txt">
@@ -102,7 +105,8 @@ export default {
             messageError: '',
             linkApi : '',
             file: {},
-            textCount: null
+            textCount: null,
+            isLoadingDelete: false
         }
     },
     methods : {
@@ -194,11 +198,16 @@ export default {
             })
         },
         deleteText(){
+            this.isLoadingDelete = true
             axios.post(`/api/delete-text/${this.idActive}`).then(response => {
                 this.messageSuccess = response.data.message
+                this.messageError = ''
                 this.activeFolder(this.idActive)
                 this.getFolder()
+                this.isLoadingDelete = false
             }).catch(error => {
+                this.isLoadingDelete = false
+                this.messageSuccess = ''
                 this.messageError = error.response.data.message
             })
         }
@@ -211,14 +220,14 @@ ul li {
     list-style: none;
     margin-top: 10px;
     margin-bottom: 10px;
-    border-radius: 10px;
+    border-radius: 7px;
     padding: 5px;
 }
 ul li:hover {
     background: #83ad83;
     color: #ffffff;
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 7px;
 }
 ul li.active {
     background: green;

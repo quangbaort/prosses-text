@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\Text;
 use Illuminate\Http\Request;
+use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 
 class UploadController extends Controller
@@ -24,12 +25,20 @@ class UploadController extends Controller
             'folder_id.required' => 'folder_id không được để trống',
             'folder_id.exit' => 'id folder không tồn tại',
         ]);
-//        $receiver = new FileReceiver('file', $request, )
-        // read file
-        $file = $request->file('file');
-        try {
-            $data = [];
+        $file = null;
+        $receiver = new FileReceiver('file', $request, HandlerFactory::classFromRequest($request));
+
+        if(!$receiver->isUploaded()) {
+            return response()->json([
+                'data' => [],
+                'message' => 'Tải lên thất bại'
+            ]);
+        }
+        $fileReceiver = $receiver->receive();
+        if($fileReceiver->isFinished()) {
+            $file = $fileReceiver->getFile();
             $file->storeAs('public/files', $file->getClientOriginalName());
+            $data = [];
             foreach (file($file) as $line) {
                 if($line !== '') {
                     $data[] = [
@@ -44,8 +53,6 @@ class UploadController extends Controller
             }
             // delete file from storage
             unlink(storage_path('app/public/files/' . $file->getClientOriginalName()));
-        } catch (\Exception $e) {
-            dd($e->getMessage());
         }
 
         return response()->json([
@@ -79,19 +86,16 @@ class UploadController extends Controller
             'folder_api.max' => 'Folder api không được vượt quá 255 ký tự!'
 
         ]);
-        $folder = Folder::query()->where('api', $request->folder_api)->first();
-        $text = Text::query()->where('folder_id', $folder->id)->select('text', 'id')->inRandomOrder()->first();
-        $textDelete = Text::query()->where('id', $text->id);
-        if($textDelete->exists()){
-            $textDelete->delete();
-        }
+//        random text in folder
+        $text = Text::query()->where('folder_id', Folder::query()->where('api', $request->folder_api)->first()->id)->inRandomOrder()->first();
+        $text->delete();
         return response()->json([
             'data' => $text,
             'message' => 'Lấy dữ liệu thành công',
         ]);
     }
 
-    public function getRowName(Request $request, $idFolder)
+    public function getRowName(Request $request, $idFolder): \Illuminate\Http\JsonResponse
     {
 
         $folder = Folder::query()->findOrFail($idFolder);
@@ -114,7 +118,7 @@ class UploadController extends Controller
             ]);
         }
         $folder = Folder::query()->findOrFail($idFolder);
-        $folder->delete();
+
         $texts = Text::query()->where('folder_id', $idFolder);
         $textCount = $texts->count();
 
@@ -125,8 +129,13 @@ class UploadController extends Controller
             ]);
         }
         if($texts->exists()){
-            $texts->delete();
+            $texts->chunkById(1000, function ($texts) {
+                foreach ($texts as $text) {
+                    $text->delete();
+                }
+            });
         }
+        $folder->delete();
         return response()->json([
             'data' => [],
             'message' => 'Đã xóa '. number_format($textCount) . ' dòng'
