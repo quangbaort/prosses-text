@@ -28,11 +28,8 @@ Route::prefix('/api')->group(function () {
         Route::get('get-row/{idFolder}', [App\Http\Controllers\Admin\UploadController::class, 'getRowName'])->name('get-row-name');
         Route::post('upload', [App\Http\Controllers\Admin\UploadController::class, 'upload'])->name('upload');
         Route::post('delete-text/{idFolder}', [App\Http\Controllers\Admin\UploadController::class, 'deleteText'])->name('delete-text');
-
+        Route::post('download', [App\Http\Controllers\Admin\UploadController::class, 'downloadText'])->name('download');
     });
     Route::get('get-row', [App\Http\Controllers\Admin\UploadController::class, 'getRow'])->name('get-row');
-
-
-
 });
 

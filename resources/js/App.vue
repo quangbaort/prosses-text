@@ -23,15 +23,15 @@
             <span style="color: red" class="my-2 d-block">{{ errorNameFolder }}</span>
         </div>
     </div>
-    <div class="my-3">
+    <div class="my-3" style="height: 400px">
         <div class="card">
             <div class="card-header">
                 Tổng quan
             </div>
-            <div class="card-body">
+            <div class="card-body ">
                 <div class="text-center" v-if="listFolder.length <= 0">Không tìm thấy danh sách</div>
-                <div class="row" v-else>
-                    <div class="col-md-3 col-lg-3 border-end">
+                <div class="row" v-else >
+                    <div class="col-md-3 col-lg-3 border-end" @scroll="loadFolder"  style="overflow: scroll; height: 400px">
                         <ul class="px-0">
                             <li v-for="list in listFolder" v-bind:class="{'active': idActive === list.id}" :key="list.id" @click="activeFolder(list.id)">
                                 {{ list.name }}
@@ -50,7 +50,7 @@
                                     </div>
                                 </div>
                                 <div> Link api:
-                                    <a :href="linkApi" v-if="linkApi !== ''">
+                                    <a :href="linkApi" target="_blank" v-if="linkApi !== ''">
                                         <span style="color: green" >
                                         {{ linkApi }}
                                         </span>
@@ -62,6 +62,11 @@
                             </div>
                             <div class="col-md-3 justify-content-end d-flex" >
                                 <button class="btn btn-danger" @click="deleteText" v-if="!isLoadingDelete">Xóa</button>
+                                <div v-else class="spinner-border text-primary mx-1" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <button class="btn btn-danger mx-2" @click="downloadFile" v-if="!isLoadingDownload">Tải xuống</button>
+
                                 <div v-else class="spinner-border text-primary mx-1" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -93,6 +98,7 @@ export default {
     },
     data() {
         return {
+            page: 1,
             idActive: null,
             isOpenAddNew: false,
             nameFolder: '',
@@ -106,7 +112,8 @@ export default {
             linkApi : '',
             file: {},
             textCount: null,
-            isLoadingDelete: false
+            isLoadingDelete: false,
+            isLoadingDownload: false
         }
     },
     methods : {
@@ -126,6 +133,24 @@ export default {
 
             }
         },
+        downloadFile() {
+            this.isLoadingDownload = true
+            axios.post(`/api/download`, {
+                folder_id: this.idActive
+            }).then(response => {
+                let blob = new Blob([response.data.data.text], {
+                    type: 'application/txt'
+                })
+                let link = document.createElement('a')
+                link.href = window.URL.createObjectURL(blob)
+                link.download = 'test.txt'
+                link.click()
+            }).catch(error => {
+                console.log(error)
+            }).finally(() => {
+                this.isLoadingDownload = false
+            })
+        },
         addNewFolder() {
             if(!this.nameFolder) {
                 this.errorNameFolder = 'Vui lòng nhập tên danh sách'
@@ -137,7 +162,7 @@ export default {
                 axios.post(`/api/add-folder`, {
                     name: this.nameFolder
                 },).then(response => {
-                    this.idActive = response.data.data.folder_id
+                    this.idActive = response.data.data._id
                     this.messageSuccess = 'Thêm mới danh sách thành công'
                     this.nameFolder = ''
                     this.errorNameFolder = ''
@@ -147,9 +172,33 @@ export default {
                 })
             }
         },
+        loadFolder(e) {
+            // if scroll to bottom of page
+            if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
+                this.page += 1
+                axios.get(`/api/get-folder/`, {
+                    params: {
+                        page: this.page
+                    }
+                }).then(response => {
+                    if(response.data.data.data.length > 0) {
+                        this.listFolder = [...this.listFolder, ...response.data.data.data]
+                    }
+                }).catch(error => {
+                    console.log(error)
+                })
+            }
+
+        },
         getFolder() {
-            axios.get(`/api/get-folder`).then(response => {
-                this.listFolder = response.data.data
+            this.linkApi = ''
+            axios.get(`/api/get-folder/`, {
+                params: {
+                    page: this.page
+                }
+            }).then(response => {
+                this.listFolder = response.data.data.data
+                console.log(this.listFolder);
                 this.idActive = !this.idActive ? this.listFolder[0].id : this.idActive
                 this.activeFolder(this.idActive)
             }).catch(error => {
@@ -202,7 +251,9 @@ export default {
             axios.post(`/api/delete-text/${this.idActive}`).then(response => {
                 this.messageSuccess = response.data.message
                 this.messageError = ''
-                this.activeFolder(this.idActive)
+                this.listFolder.filter(list => list.id !== this.idActive)
+                this.idActive = this.listFolder[0].id
+                this.page = 1
                 this.getFolder()
                 this.isLoadingDelete = false
             }).catch(error => {

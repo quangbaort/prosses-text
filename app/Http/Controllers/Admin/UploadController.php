@@ -134,6 +134,7 @@ class UploadController extends Controller
         $textCount = $texts->count();
 
         if($textCount <= 0) {
+            $folder->delete();
             return response()->json([
                 'data' => [],
                 'message' => 'Đã xóa hết'
@@ -150,6 +151,24 @@ class UploadController extends Controller
         return response()->json([
             'data' => [],
             'message' => 'Đã xóa '. number_format($textCount) . ' dòng'
+        ]);
+    }
+
+    public function downloadText(Request $request)
+    {
+        $request->validate([
+            'folder_id' => 'required|exists:folders,_id',
+        ], [
+            'folder_id.required' => 'Folder id không được bỏ trống!',
+            'folder_id.exists' => 'Folder id không tồn tại!',
+        ]);
+        $folder = Folder::query()->findOrFail($request->folder_id);
+        $texts = Text::query()->where('folder_id', $request->folder_id)->get();
+        return response()->json([
+            'data' => [
+                'text' => $texts->pluck('text')->implode(''),
+            ],
+            'message' => 'Lấy giữ liệu thành công!'
         ]);
     }
 }
