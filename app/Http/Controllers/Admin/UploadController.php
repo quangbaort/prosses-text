@@ -111,6 +111,12 @@ class UploadController extends Controller
     {
 
         $folder = Folder::query()->findOrFail($idFolder);
+        if(!$folder) {
+            return response()->json([
+                'data' => [],
+                'message' => 'Không có dữ liệu'
+            ]);
+        }
         $textCount = Text::query()->where('folder_id', $idFolder)->count();
         return response()->json([
             'data' => [
