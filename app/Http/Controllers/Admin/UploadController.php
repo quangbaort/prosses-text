@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\Text;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 
@@ -47,9 +48,12 @@ class UploadController extends Controller
                     ];
                 }
             }
-            $collection = collect($data)->chunk(1000);
+            $collection = collect($data)->chunk(100000000000000);
             foreach ($collection as $chunk) {
-                Text::query()->insert($chunk->toArray());
+//                Text::query()->insert($chunk->toArray());
+                DB::collection('texts')->raw(function ($collection) use ($chunk) {
+                    return $collection->insertMany($chunk->toArray());
+                });
             }
             // delete file from storage
             unlink(storage_path('app/public/files/' . $file->getClientOriginalName()));
