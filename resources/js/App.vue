@@ -141,9 +141,10 @@ export default {
                 let blob = new Blob([response.data.data.text], {
                     type: 'application/txt'
                 })
+                const folder = this.listFolder.find(list => list.id === this.idActive)
                 let link = document.createElement('a')
                 link.href = window.URL.createObjectURL(blob)
-                link.download = 'test.txt'
+                link.download = `${folder.name}.txt`
                 link.click()
             }).catch(error => {
                 console.log(error)
