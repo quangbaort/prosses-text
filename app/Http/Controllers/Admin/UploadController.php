@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\Text;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
@@ -141,11 +142,7 @@ class UploadController extends Controller
             ]);
         }
         if($texts->exists()){
-            $texts->chunkById(1000, function ($texts) {
-                foreach ($texts as $text) {
-                    $text->delete();
-                }
-            });
+            Artisan::call('list:delete',  ['list_slug' => $folder->id]);
         }
         $folder->delete();
         return response()->json([
