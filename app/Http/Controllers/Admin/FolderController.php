@@ -19,12 +19,11 @@ class FolderController extends Controller
     public function addFolder(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:folders,name',
+            'name' => 'required|string|max:255',
         ], [
             'name.required' => 'Tên danh sách không được để trống!',
             'name.string' => 'Tên danh sách phải là ký tự',
             'name.max' => 'Tên danh sách không được vượt quá 255 ký tự',
-            'name.unique' => 'Tên danh sách đã bị trùng'
         ]);
         $folderId = Folder::query()->create([
            'name' => $request->name,
