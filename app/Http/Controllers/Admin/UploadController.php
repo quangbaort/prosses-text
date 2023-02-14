@@ -163,7 +163,7 @@ class UploadController extends Controller
             'folder_id.exists' => 'Folder id không tồn tại!',
         ]);
         $folder = Folder::query()->findOrFail($request->folder_id);
-        $texts = Text::query()->where('folder_id', $request->folder_id)->get();
+        $texts = DB::collection('texts')->where('folder_id', $request->folder_id)->get();
         return response()->json([
             'data' => [
                 'text' => $texts->pluck('text')->implode(''),

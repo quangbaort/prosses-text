@@ -40,7 +40,7 @@
                     </div>
                     <div class="col-md-9 col-lg-9">
                         <div class="row" >
-                            <div class="col-md-9">
+                            <div class="col-md-10">
                                 <div>Số dòng còn lại:
                                     <span style="color: green" v-if="textCount !== null">
                                         {{ textCount }}
@@ -60,7 +60,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 justify-content-end d-flex" >
+                            <div class="col-md-2 justify-content-end d-flex" >
                                 <button class="btn btn-danger" @click="deleteText" v-if="!isLoadingDelete">Xóa</button>
                                 <div v-else class="spinner-border text-primary mx-1" role="status">
                                     <span class="visually-hidden">Loading...</span>
